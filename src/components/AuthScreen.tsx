@@ -21,7 +21,10 @@ export default function AuthScreen() {
       } else {
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(), password: pw,
-          options: { data: { full_name: name.trim() } },
+          options: {
+            data: { full_name: name.trim() },
+            emailRedirectTo: window.location.origin + import.meta.env.BASE_URL,
+          },
         });
         if (error) throw error;
         if (!data.session) {

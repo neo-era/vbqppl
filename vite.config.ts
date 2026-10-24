@@ -2,7 +2,11 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
+// Đường dẫn gốc: '/' (Vercel/tên miền riêng) hoặc '/vbqppl/' (GitHub Pages) — đặt qua biến BASE_PATH.
+const base = process.env.BASE_PATH || '/';
+
 export default defineConfig({
+  base,
   plugins: [
     react(),
     VitePWA({
@@ -19,8 +23,8 @@ export default defineConfig({
         short_name: 'VBQPPL',
         description: 'Lưu trữ & tra cứu văn bản quy phạm pháp luật',
         lang: 'vi',
-        start_url: '/',
-        scope: '/',
+        start_url: base,
+        scope: base,
         display: 'standalone',
         orientation: 'portrait-primary',
         theme_color: '#5b4bff',
