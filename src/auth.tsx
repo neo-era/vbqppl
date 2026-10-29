@@ -38,10 +38,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (data.session) await loadProfile();
       setLoading(false);
     });
-    const { data: sub } = supabase.auth.onAuthStateChange(async (_e, s) => {
+    // QUAN TRỌNG: callback này chạy khi thư viện đang giữ khoá phiên.
+    // Không được await bất kỳ lệnh Supabase nào bên trong (gây treo mọi yêu cầu sau đó) —
+    // đẩy việc tải profile ra ngoài bằng setTimeout.
+    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
       setSession(s);
-      if (s) await loadProfile();
-      else setProfile(null);
+      if (!s) { setProfile(null); return; }
+      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+        setTimeout(() => { if (mounted) loadProfile(); }, 0);
+      }
     });
     return () => { mounted = false; sub.subscription.unsubscribe(); };
   }, []);

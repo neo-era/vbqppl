@@ -62,19 +62,24 @@ export default function DocDetail({ docId, query, isEditor, onClose, onEdit, onO
   const [savingNote, setSavingNote] = useState(false);
   const [showContent, setShowContent] = useState(false);
   const reqRef = useRef(0);
+  const [loadErr, setLoadErr] = useState('');
 
   async function reload() {
     const rid = ++reqRef.current;
-    const d = await getDocument(docId);
-    if (rid !== reqRef.current) return; // đã chuyển sang văn bản khác
-    setShowContent(false);
-    setDoc(d);
-    if (d) {
+    setLoadErr('');
+    try {
+      const d = await getDocument(docId);
+      if (rid !== reqRef.current) return; // đã chuyển sang văn bản khác
+      setShowContent(false);
+      setDoc(d);
+      if (!d) { setLoadErr('Không tìm thấy văn bản (có thể đã bị xoá).'); return; }
       const n = d.user_notes?.[0];
       setNoteText(n?.note ?? '');
       setFav(!!n?.is_favorite);
       const r = await listRelations(docId);
       if (rid === reqRef.current) setRels(r);
+    } catch (e: any) {
+      if (rid === reqRef.current) setLoadErr('Không tải được văn bản: ' + (e?.message || e));
     }
   }
   useEffect(() => { reload(); /* eslint-disable-next-line */ }, [docId]);
@@ -85,7 +90,18 @@ export default function DocDetail({ docId, query, isEditor, onClose, onEdit, onO
     return (
       <div className="overlay" onClick={onClose}>
         <div className="modal" onClick={(e) => e.stopPropagation()}>
-          <div className="loading"><Loader2 className="i" style={{ animation: 'sp .7s linear infinite' }} /> Đang tải…</div>
+          {loadErr ? (
+            <div className="empty">
+              <h3>Chưa mở được văn bản</h3>
+              <p>{loadErr}</p>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 14 }}>
+                <button className="btn pri sm" onClick={reload}>Thử lại</button>
+                <button className="btn ghost sm" onClick={onClose}>Đóng</button>
+              </div>
+            </div>
+          ) : (
+            <div className="loading"><Loader2 className="i" style={{ animation: 'sp .7s linear infinite' }} /> Đang tải…</div>
+          )}
         </div>
       </div>
     );

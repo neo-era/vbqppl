@@ -10,8 +10,13 @@ export default function AdminUsers({ onClose }: { onClose: () => void }) {
   const { push } = useToast();
   const { profile } = useAuth();
   const [list, setList] = useState<Profile[] | null>(null);
+  const [loadErr, setLoadErr] = useState('');
 
-  useEffect(() => { listProfiles().then(setList).catch((e) => push('Lỗi tải danh sách: ' + e.message, 'err')); /* eslint-disable-next-line */ }, []);
+  function load() {
+    setLoadErr('');
+    listProfiles().then(setList).catch((e) => setLoadErr('Không tải được danh sách: ' + (e?.message || e)));
+  }
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
 
   async function change(id: string, role: Profile['role']) {
     try { await setRole(id, role); setList((l) => l!.map((p) => p.id === id ? { ...p, role } : p)); push('Đã cập nhật quyền.', 'ok'); }
@@ -30,7 +35,13 @@ export default function AdminUsers({ onClose }: { onClose: () => void }) {
           <div className="alert info" style={{ marginBottom: 14 }}>
             <b>Quản trị</b>: toàn quyền. <b>Biên tập</b>: thêm/sửa/xoá văn bản. <b>Xem</b>: tra cứu + ghi chú riêng.
           </div>
-          {!list && <div className="loading"><Loader2 className="i" style={{ animation: 'sp .7s linear infinite' }} /> Đang tải…</div>}
+          {loadErr && (
+            <div className="alert err" style={{ display: 'flex', gap: 10, alignItems: 'center', justifyContent: 'space-between' }}>
+              <span>{loadErr}</span>
+              <button className="btn ghost sm" onClick={load}>Thử lại</button>
+            </div>
+          )}
+          {!list && !loadErr && <div className="loading"><Loader2 className="i" style={{ animation: 'sp .7s linear infinite' }} /> Đang tải…</div>}
           {list?.map((p) => (
             <div key={p.id} className="rel-item" style={{ justifyContent: 'space-between' }}>
               <span style={{ fontSize: 13.5, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
