@@ -1,0 +1,23 @@
+name: Giữ Supabase hoạt động
+
+# Supabase gói miễn phí tự tạm nghỉ sau ~7 ngày không có truy cập.
+# Tác vụ này gọi API 3 ngày một lần để CSDL luôn thức.
+on:
+  schedule:
+    - cron: '0 1 */3 * *'   # 08:00 giờ VN, mỗi 3 ngày
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Gọi API Supabase
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' \
+            -H "apikey: sb_publishable_l-AELJlreGhBUJLSZKDmvA_n-1cI48f" \
+            "https://jeuvzftdrqgwniwmouwf.supabase.co/rest/v1/documents?select=id&limit=1")
+          echo "HTTP $code"
+          test "$code" = "200"

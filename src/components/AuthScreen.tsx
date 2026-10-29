@@ -86,5 +86,7 @@ function viError(m: string): string {
   if (s.includes('password should be at least')) return 'Mật khẩu phải có ít nhất 6 ký tự.';
   if (s.includes('email not confirmed')) return 'Email chưa được xác nhận. Vui lòng kiểm tra hộp thư.';
   if (s.includes('rate limit')) return 'Thao tác quá nhanh, vui lòng thử lại sau giây lát.';
+  if (s.includes('failed to fetch') || s.includes('networkerror') || s.includes('load failed'))
+    return 'Không kết nối được máy chủ. Kiểm tra mạng, hoặc máy chủ đang khởi động lại — thử lại sau 1–2 phút.';
   return m;
 }
